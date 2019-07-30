@@ -77,7 +77,11 @@ class KNearestNeighbor(object):
                 #####################################################################
                 # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-                pass
+                dif_arr: np.ndarray = X[i] - self.X_train[j]
+                sqr_arr = dif_arr ** 2
+                sum = np.sum(sqr_arr)
+
+                dists[i, j] = sum ** 0.5
 
                 # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         return dists
@@ -143,7 +147,7 @@ class KNearestNeighbor(object):
 
         Inputs:
         - dists: A numpy array of shape (num_test, num_train) where dists[i, j]
-          gives the distance betwen the ith test point and the jth training point.
+          gives the distance between the ith test point and the jth training point.
 
         Returns:
         - y: A numpy array of shape (num_test,) containing predicted labels for the
@@ -153,7 +157,7 @@ class KNearestNeighbor(object):
         y_pred = np.zeros(num_test)
         for i in range(num_test):
             # A list of length k storing the labels of the k nearest neighbors to
-            # the ith test point.
+            # the i'th test point.
             closest_y = []
             #########################################################################
             # TODO:                                                                 #
@@ -164,7 +168,8 @@ class KNearestNeighbor(object):
             #########################################################################
             # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-            pass
+            sorted_indices = np.argsort(dists[i])
+            closest_y: np.ndarray = self.y_train[sorted_indices[:k]]
 
             # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
             #########################################################################
@@ -176,7 +181,10 @@ class KNearestNeighbor(object):
             #########################################################################
             # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-            pass
+            labels, counts = np.unique(closest_y, return_counts=True)
+            closest_label = labels[np.argmax(counts)]
+
+            y_pred[i] = closest_label
 
             # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
