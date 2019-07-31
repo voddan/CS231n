@@ -105,7 +105,15 @@ class KNearestNeighbor(object):
             #######################################################################
             # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-            pass
+            dif_arr: np.ndarray = self.X_train - X[i, :]
+            assert dif_arr.shape == self.X_train.shape
+
+            sqr_arr = dif_arr ** 2
+
+            sum = np.sum(sqr_arr, axis=1)
+            assert sum.shape == (num_train,)
+
+            dists[i, :] = sum ** 0.5
 
             # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         return dists
@@ -134,8 +142,24 @@ class KNearestNeighbor(object):
         #       and two broadcast sums.                                         #
         #########################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+        D = X.shape[1]
+        Tr = self.X_train
+        assert Tr.shape == (num_train, D)
+        assert X.shape == (num_test, D)
 
-        pass
+        Tr_sqr = np.sum(Tr ** 2, axis=1)
+        assert Tr_sqr.shape == (num_train,)
+
+        X_sqr = np.sum(X ** 2, axis=1)
+        assert X_sqr.shape == (num_test,)
+
+        XTr = np.matmul(X, np.transpose(Tr))
+        assert XTr.shape == (num_test, num_train)
+
+        sum = np.transpose(np.transpose(- 2 * XTr + Tr_sqr) + X_sqr)
+        assert sum.shape == (num_test, num_train)
+
+        dists = sum ** 0.5
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         return dists
