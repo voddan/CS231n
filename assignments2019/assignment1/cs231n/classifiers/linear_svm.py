@@ -24,13 +24,13 @@ def svm_loss_naive(W, X, y, reg):
     dW = np.zeros(W.shape) # initialize the gradient as zero
 
     # compute the loss and the gradient
-    num_classes = W.shape[1]
-    num_train = X.shape[0]
+    num_classes = W.shape[1] # C
+    num_train = X.shape[0]   # N
     loss = 0.0
-    for i in range(num_train):
-        scores = X[i].dot(W)
+    for i in range(num_train): #N
+        scores = X[i].dot(W) # C
         correct_class_score = scores[y[i]]
-        for j in range(num_classes):
+        for j in range(num_classes): #C
             if j == y[i]:
                 continue
             margin = scores[j] - correct_class_score + 1 # note delta = 1
@@ -54,7 +54,20 @@ def svm_loss_naive(W, X, y, reg):
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    for i in range(num_train): #N
+        scores = X[i].dot(W) # C
+        correct_class_score = scores[y[i]]
+        for j in range(num_classes): #C
+            # if j == y[i]:
+            #     continue
+            margin = scores[j] - correct_class_score + 1 # note delta = 1
+            if margin > 0:
+                if j != y[i]:
+                    dW[:, j] += X[i]
+                    dW[:, y[i]] -= X[i]
+
+    dW /= num_train
+    dW += 2 * reg * W
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     
