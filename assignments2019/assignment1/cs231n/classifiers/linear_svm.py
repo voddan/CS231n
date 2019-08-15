@@ -91,7 +91,21 @@ def svm_loss_vectorized(W, X, y, reg):
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    num_classes = W.shape[1]  # C
+    num_train = X.shape[0]  # N
+    loss = 0.0
+    scores = X.dot(W)  # (N, C)
+
+    correct_scores = scores[range(num_train), y]
+    assert correct_scores.shape == (num_train, )
+
+    margin = (scores.T - correct_scores + 1).T  # (C)
+
+    marginClipped = np.clip(margin, a_min=0, a_max=None)
+    loss += np.sum(marginClipped) - num_train
+
+    loss /= num_train
+    loss += reg * np.sum(W * W)
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
