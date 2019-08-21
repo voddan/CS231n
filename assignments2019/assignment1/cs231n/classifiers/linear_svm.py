@@ -81,8 +81,6 @@ def svm_loss_vectorized(W, X, y, reg):
 
     Inputs and outputs are the same as svm_loss_naive.
     """
-    loss = 0.0
-    dW = np.zeros(W.shape) # initialize the gradient as zero
 
     #############################################################################
     # TODO:                                                                     #
@@ -91,31 +89,54 @@ def svm_loss_vectorized(W, X, y, reg):
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
+    import autograd.numpy as np
+    from autograd import grad, jacobian, elementwise_grad, holomorphic_grad
+
     C = W.shape[1]  # C
     N = X.shape[0]  # N
 
-    scores1 = X.dot(W)  # (N, C)
+    def scores1F(W):
+        scores1 = np.dot(X, W)  # (N, C)
+        return scores1
 
-    correct_scores = scores1[range(N), y]
-    assert correct_scores.shape == (N, )
+    def correct_scoresF(W):
+        correct_scores = scores1F(W)[range(N), y]
+        return correct_scores
 
-    scores0 = scores1.T
+    def scoresF(W):
+        scores0 = scores1F(W).T
+        return scores0
 
-    margin2 = scores0 - correct_scores
-    margin1 = margin2 + 1
-    margin0 = margin1.T
+    def marginF(W):
+        margin2 = scoresF(W) - correct_scoresF(W)
+        margin1 = margin2 + 1
+        margin0 = margin1.T
+        return margin0
 
-    marginClipped = np.clip(margin0, a_min=0, a_max=None)
+    def marginClippedF(W):
+        marginClipped = np.clip(marginF(W), a_min=0, a_max=None)
+        return marginClipped
 
-    loss3 = np.sum(marginClipped)
-    loss2 = loss3 - N
-    loss1 = loss2 / N
+    def sumMarginClippedF(W):
+        loss3 = np.sum(marginClippedF(W))
+        return loss3
 
-    regw2 = W * W
-    regw1 = np.sum(regw2)
-    regw0 = reg * regw1
+    def lossF(W):
+        loss3 = sumMarginClippedF(W)
+        loss2 = loss3 - N
+        loss1 = loss2 / N
+        return loss1
 
-    loss0 = loss1 + regw0
+    def regwF(W):
+        regw2 = W * W
+        regw1 = np.sum(regw2)
+        regw0 = reg * regw1
+        return regw0
+
+    def svm_loss(W):
+        loss0 = lossF(W) + regwF(W)
+        return loss0
+
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
@@ -130,48 +151,6 @@ def svm_loss_vectorized(W, X, y, reg):
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    #backprop loss0 = loss1 + regw0
-    dloss1 = 1
-    dregw0 = 1
-    #backprop regw0 = reg * regw1
-    dregw1 = reg * dregw0
-    #backprop regw1 = np.sum(regw2)
-    dregw2 = np.ones(regw2.shape) * dregw1
-    #backprop regw2 = W * W
-    dW_0 = 2 * W * dregw2
-
-
-    #backprop loss1 = loss2 / N
-    dloss2 = 1/N * dloss1
-    #backprop loss2 = loss3 - N
-    dloss3 = 1 * dloss2
-    #backprop loss3 = np.sum(marginClipped)
-    dmarginClipped = np.ones(marginClipped.shape) * dloss3
-    #backprop marginClipped = np.clip(margin0, a_min=0, a_max=None)
-    dmargin0 = dmarginClipped
-    dmargin0[np.nonzero(margin0 <= 0)] = 0
-    #backprop margin0 = margin1.T
-    dmargin1 = dmargin0.T
-    #backprop margin1 = margin2 + 1
-    dmargin2 = dmargin1
-    #backprop margin2 = scores0 - correct_scores
-    dscores0 = 1 * dmargin2
-    dcorrect_scores = -1 * dmargin2
-    #backprop scores0 = scores1.T
-    dscores1_1 = dscores0.T
-    #backprop correct_scores = scores1[range(N), y]
-    t = np.ones(dcorrect_scores.shape)
-    t[y, range(N)] = 0
-    dscores1_2 = dcorrect_scores
-    dscores1_2[np.nonzero(t)] = 0
-
-    dscores1 = dscores1_1 + dscores1_2.T
-    #backprop scores1 = X.dot(W)
-    dW_1 = X.T.dot(dscores1)
-
-    dW = dW_0 + dW_1
-
-
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    return loss0, dW
+    return svm_loss(W), grad(svm_loss)(W)
