@@ -123,8 +123,8 @@ def svm_loss_vectorized(W, X, y, reg):
 
     def lossF(W):
         loss3 = sumMarginClippedF(W)
-        loss2 = loss3 - N
-        loss1 = loss2 / N
+        loss2 = loss3 / N
+        loss1 = loss2 - 1
         return loss1
 
     def regwF(W):
@@ -151,6 +151,28 @@ def svm_loss_vectorized(W, X, y, reg):
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
+    def dmarginF(W):
+        return elementwise_grad(marginF)(W)
+
+    def dmarginClippedF(W):
+        # mc = marginClippedF(W)
+        # d = dmarginF(W)
+        # d[np.nonzero(mc <= 0)] = 0
+        # return d
+        return elementwise_grad(marginClippedF)(W)
+
+    def dsumMarginClippedF(W):
+        return dmarginClippedF(W)
+
+    def dlossF(W):
+        return 1/N * dsumMarginClippedF(W)
+
+    def dregwF(W):
+        return 2 * reg * W
+
+    def dsvm_loss(W):
+        return dlossF(W) + dregwF(W)
+
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    return svm_loss(W), grad(svm_loss)(W)
+    return svm_loss(W), dsvm_loss(W)
